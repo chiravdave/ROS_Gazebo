@@ -1,0 +1,12 @@
+Fetch Test:
+
+You are to  write a program to complete the following three tasks. Simulation may be done using Gazebo. You may use the fetch robot model, and create any assets(AR tags, etc) that may be required for the tasks. 
+
+
+Task 1: Given a target pose in the base frame, move the fetch arm to that pose by giving it as the target in the base frame.
+
+Task 2: Use TF (ros package) to compute what a given base frame pose would be in the camera frame. Then move the fetch arm to that pose in camera frame.
+
+Task 3: Detect the pose of an AR marker from the camera and move the fetch arm to that pose.
+
+Good Luck!
