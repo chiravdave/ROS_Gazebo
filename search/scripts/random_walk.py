@@ -24,7 +24,7 @@ class RandomWalk:
 		action_set = problem.get_actions()
 		next_possible_states = list()
 		for action in action_set:
-			next_possible_state,cost = problem.get_successor_states(self.current_state,action)
+			next_possible_state,cost = problem.get_successor(self.current_state,action)
 			if next_possible_state.x != -1:
 				next_possible_states.append((next_possible_state,action))
 		rand_number = np.random.choice(range(len(next_possible_states)))
