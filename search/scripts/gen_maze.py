@@ -93,14 +93,14 @@ class Maze:
 			if(flag == 0 and ((x+scale) <= grid_dimension*scale) and ((x, y, x+scale, y) not in blocked_edges)):
 				blocked_edges.add((x, y, x+scale, y))
 				#Adding obstacle in the middle with some offset value of the edge to be blocked
-				offset = np.random.uniform(0, 0.2*scale)
+				offset = np.random.uniform(0, 0.07*scale)
 				coords.append((x+scale/2+offset, y))
 				self.add_can(f_out, x+scale/2+offset, y)
 				count += 1
 			elif(flag == 1 and ((y+scale) <= grid_dimension*scale) and ((x, y, x, y+scale) not in blocked_edges)):
 				blocked_edges.add((x, y, x, y+scale))
 				#Adding obstacle in the middle with some offset value of the edge to be blocked
-				offset = np.random.uniform(0, 0.2*scale)
+				offset = np.random.uniform(0, 0.07*scale)
 				coords.append((x, y+scale/2-offset))
 				self.add_can(f_out, x, y+scale/2-offset)
 				count += 1
