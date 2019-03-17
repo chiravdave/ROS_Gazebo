@@ -27,15 +27,15 @@ class Paddle:
 
 class Game:
 
-	def __init__(self, board_length, board_width, scale=0.2, ball_speed):
+	def __init__(self, board_length, board_width, ball_speed, scale=0.2):
 		self.board_width = board_width
 		self.board_length = board_length 
 		self.scale = scale
 		self.ball_speed = ball_speed
 		self.directions = ['E','W','N','S','NE','NW','SW','SE']
-		self.marker_publisher = rospy.Publisher('visualization_marker', Marker, queue_size=100)
-		self.ball_loc_pub = rospy.Publisher('ball_location', BallLoc)
-		self.rospy.Subscriber("move_player_paddle", MovePlayerPaddle, move_player_paddle)
+		self.marker_publisher = rospy.Publisher('visualization_marker', Marker, queue_size=1)
+		self.ball_loc_pub = rospy.Publisher('ball_location', BallLoc, queue_size=1)
+		rospy.Subscriber("move_player_paddle", MovePlayerPaddle, self.move_player_paddle)
 		self.ball_loc_msg = BallLoc()
 
 	def start(self):
@@ -57,7 +57,7 @@ class Game:
 		self.add_paddle_marker(self.board_width/2, self.scale/2, 0)
 		#Adding marker for player's paddle
 		self.add_paddle_marker(self.board_width/2, self.board_length-self.scale/2, 1)
-		self.add_score_marker()
+		#self.add_score_marker()
 
 	def add_game_boundary_rviz(self, boundary_info):
 		'''
@@ -167,15 +167,15 @@ class Game:
 		'''
 		pass
 
-	def add_marker_rviz(marker):
+	def add_marker_rviz(self, marker):
 		'''
 		This method will make sure that the marker is added to rviz
 		'''
 		i = 1
-			while i <= 2:
-				self.marker_publisher.publish(marker)
-				rospy.sleep(2)
-				i += 1
+		while i <= 2:
+			self.marker_publisher.publish(marker)
+			rospy.sleep(2)
+			i += 1
 
 	def move_ball(self, time):
 		'''
@@ -275,9 +275,5 @@ if __name__ == '__main__':
 	parser.add_argument('-l', help='for providing board length', metavar='4', action='store', dest='board_length', default=4, type=int)
 	parser.add_argument('-s', help='for providing ball speed', metavar='1', action='store', dest='ball_speed', default=1, type=int)
 	args = parser.parse_args()
-	game = Game(args.board_width, args.board_length, 0.2, args.ball_speed)
-	i = 1
-	while i <= 2:
-		game.create_board_rviz()
-		rospy.sleep(2)
-		i += 1
+	game = Game(args.board_width, args.board_length, args.ball_speed)
+	game.create_board_rviz()
