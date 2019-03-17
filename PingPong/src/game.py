@@ -2,6 +2,8 @@
 
 from numpy.random import choice
 from visualization_msgs.msg import Marker
+from PingPong.msg import BallLoc, MovePlayerPaddle
+import argparse
 import rospy
 
 class Ball:
@@ -25,13 +27,16 @@ class Paddle:
 
 class Game:
 
-	def __init__(self, board_length, board_width, scale, ball_speed):
+	def __init__(self, board_length, board_width, scale=0.2, ball_speed):
 		self.board_width = board_width
 		self.board_length = board_length 
 		self.scale = scale
 		self.ball_speed = ball_speed
 		self.directions = ['E','W','N','S','NE','NW','SW','SE']
 		self.marker_publisher = rospy.Publisher('visualization_marker', Marker, queue_size=100)
+		self.ball_loc_pub = rospy.Publisher('ball_location', BallLoc)
+		self.rospy.Subscriber("move_player_paddle", MovePlayerPaddle, move_player_paddle)
+		self.ball_loc_msg = BallLoc()
 
 	def start(self):
 		self.ball = Ball(self.board_width/2, self.board_length/2)
@@ -84,35 +89,35 @@ class Game:
 			boundary_marker.color.r = 1
 			boundary_marker.color.g = 1
 			boundary_marker.color.b = 1 
-			self.marker_publisher.publish(boundary_marker)
+			self.add_marker_rviz(boundary_marker)
 			index += 1
 
 	def add_ball_marker(self, center_x, center_y):
 		'''
 		This method will add a marker for the ball
 		'''
-		self.ball_marker = Marker()
-		self.ball_marker.header.frame_id = "/map"
-		self.ball_marker.header.stamp = rospy.Time.now()
-		self.ball_marker.action = self.ball_marker.ADD
-		self.ball_marker.type = self.ball_marker.CYLINDER
-		self.ball_marker.ns = 'ball'
-		self.ball_marker.id = 1
-		self.ball_marker.scale.x = self.scale
-		self.ball_marker.scale.y = self.scale
-		self.ball_marker.scale.z = 0.05
-		self.ball_marker.color.a = 1
-		self.ball_marker.color.r = 1
-		self.ball_marker.color.g = 1
-		self.ball_marker.color.b = 1
-		self.ball_marker.pose.orientation.w = 0
-		self.ball_marker.pose.orientation.x = 0
-		self.ball_marker.pose.orientation.y = 0
-		self.ball_marker.pose.orientation.z = 0
-		self.ball_marker.pose.position.x = center_x
-		self.ball_marker.pose.position.y = center_y
-		self.ball_marker.pose.position.z = 0.025 
-		self.marker_publisher.publish(self.ball_marker)
+		ball_marker = Marker()
+		ball_marker.header.frame_id = "/map"
+		ball_marker.header.stamp = rospy.Time.now()
+		ball_marker.action = ball_marker.ADD
+		ball_marker.type = ball_marker.CYLINDER
+		ball_marker.ns = 'ball'
+		ball_marker.id = 1
+		ball_marker.scale.x = self.scale
+		ball_marker.scale.y = self.scale
+		ball_marker.scale.z = 0.05
+		ball_marker.color.a = 1
+		ball_marker.color.r = 1
+		ball_marker.color.g = 1
+		ball_marker.color.b = 1
+		ball_marker.pose.orientation.w = 0
+		ball_marker.pose.orientation.x = 0
+		ball_marker.pose.orientation.y = 0
+		ball_marker.pose.orientation.z = 0
+		ball_marker.pose.position.x = center_x
+		ball_marker.pose.position.y = center_y
+		ball_marker.pose.position.z = 0.025 
+		self.add_marker_rviz(ball_marker)
 
 	def add_paddle_marker(self, center_x, center_y, who):
 		'''
@@ -127,7 +132,7 @@ class Game:
 		marker.action = marker.ADD
 		marker.type = marker.CUBE
 		marker.scale.x = 3*self.scale
-		marker.scale.y = self.scale/2
+		marker.scale.y = self.scale
 		marker.scale.z = 0.05
 		marker.pose.orientation.w = 0
 		marker.pose.orientation.x = 0
@@ -136,29 +141,24 @@ class Game:
 		marker.pose.position.x = center_x
 		marker.pose.position.z = 0.025
 		if who == 0:
-			self.computer_marker = marker
-			self.computer_marker.ns = 'computer'
-			self.computer_marker.id = 2
-			self.computer_marker.color.a = 1
-			self.computer_marker.color.r = 1
-			self.computer_marker.color.g = 1
-			self.computer_marker.color.b = 1
-			self.computer_marker.pose.position.y = center_y
+			marker.ns = 'computer'
+			marker.id = 2
+			marker.color.a = 1
+			marker.color.r = 1
+			marker.color.g = 1
+			marker.color.b = 1
+			marker.pose.position.y = center_y
 		else:
-			self.player_marker = marker
-			self.player_marker.ns = 'player'
-			self.player_marker.id = 3
-			self.player_marker.color.a = 1
-			self.player_marker.color.r = 0
-			self.player_marker.color.g = 0
-			self.player_marker.color.b = 1
-			self.player_marker.pose.position.y = center_y
-		self.marker_publisher.publish(marker)
+			marker.ns = 'player'
+			marker.id = 3
+			marker.color.a = 1
+			marker.color.r = 0
+			marker.color.g = 0
+			marker.color.b = 1
+			marker.pose.position.y = center_y
+		self.add_marker_rviz(marker)
 
-	def add_score_marker(self):
-		pass
-
-	def update_score(self, who):
+	def add_score_marker(self, who):
 		'''
 		This method will update the scores. 
 
@@ -167,13 +167,15 @@ class Game:
 		'''
 		pass
 
-	def reset(self):
-		self.ball.x, self.ball.y = self.board_width/2, self.board_length/2
-		self.computer.x, self.computer.y = self.board_width/2, 0
-		self.player.x, self.player.y = self.board_width/2, self.board_length/2
-		self.update_ball_marker()
-		self.update_paddle_marker(0)
-		self.update_paddle_marker(1)
+	def add_marker_rviz(marker):
+		'''
+		This method will make sure that the marker is added to rviz
+		'''
+		i = 1
+			while i <= 2:
+				self.marker_publisher.publish(marker)
+				rospy.sleep(2)
+				i += 1
 
 	def move_ball(self, time):
 		'''
@@ -182,15 +184,16 @@ class Game:
 		time: it is used to update ball location in single steps and upto the speed specified. 
 		'''
 		if time > self.speed:
+			self.add_ball_marker(self.ball.x, self.ball.y)
 			return
 		#Checking if the game is over or not
-		if self.ball.y == self.scale/2 or self.ball.y == self.board_length-self.scale/2:
+		elif self.ball.y == self.scale/2 or self.ball.y == self.board_length-self.scale/2:
 			#Checking if the ball reached the computer's end or not
 			if self.ball.y == self.scale/2:
 				self.update_score(1)
 			else:
 				self.update_score(0)
-			self.reset()
+			self.start()
 			return
 		#Checking if the ball got hit by the computer's paddle
 		elif self.ball.x in range(self.computer.x-2*self.scale, self.computer.x+2.5*self.scale) and self.ball.y == 1.5*self.scale:
@@ -214,7 +217,7 @@ class Game:
 			else:
 				self.ball_direction = 'SE'
 				self.ball.update_location(self.scale, -self.scale)
-		#Checking if the ball hit the left boundary/border
+		#Checking if the ball hit the top boundary/border
 		elif self.ball.x == self.scale*0.5:
 			if self.ball_direction == 'SW':
 				self.ball_direction = 'SE'
@@ -222,7 +225,7 @@ class Game:
 			else:
 				self.ball_direction = 'NE'
 				self.ball.update_location(self.scale, self.scale)
-		#Checking if the ball hit the right boundary/border
+		#Checking if the ball hit the bottom boundary/border
 		elif self.ball.x == self.board_width-scale*0.5:
 			if self.ball_direction == 'NE':
 				self.ball_direction = 'NW'
@@ -243,30 +246,36 @@ class Game:
 			self.ball.update_location(0, -self.scale)
 		else:
 			self.ball.update_location(self.scale, -self.scale)
-		self.update_ball_marker()
 		self.move_ball(time+1)
 
-	def move_player_paddle(self, action):
+	def move_player_paddle(self, data):
 		'''
 		This method will move the player's paddle
 		'''
-		if action == 'left' and self.player.x > 1.5*self.scale:
+		if data.where == 'up' and self.player.x > 1.5*self.scale:
 			self.player.update_location(-self.scale)
-		elif action == 'right' and self.player.x < self.board_width-1.5*self.scale:
+		elif data.where == 'down' and self.player.x < self.board_width-1.5*self.scale:
 			self.player.update_location(self.scale)
+		self.add_paddle_marker(self.player.x, self.board_length-self.scale/2, 1)
 
 	def move_computer_paddle(self):
 		'''
 		This method will move the computer's paddle
 		'''
-		if action == 'left' and self.computer.x > 1.5*self.scale:
+		if data.where == 'up' and self.computer.x > 1.5*self.scale:
 			self.player.update_location(-self.scale)
-		elif action == 'right' and self.computer.x < self.board_width-1.5*self.scale:
+		elif data.where == 'down' and self.computer.x < self.board_width-1.5*self.scale:
 			self.player.update_location(self.scale)
+		self.add_paddle_marker(self.computer.x, self.scale/2, 0)
 
 if __name__ == '__main__':
 	rospy.init_node('game', anonymous=True)
-	game = Game(2, 2, 0.2, 1)
+	parser = argparse.ArgumentParser()
+	parser.add_argument('-w', help='for providing board width', metavar='3', action='store', dest='board_width', default=3, type=int)
+	parser.add_argument('-l', help='for providing board length', metavar='4', action='store', dest='board_length', default=4, type=int)
+	parser.add_argument('-s', help='for providing ball speed', metavar='1', action='store', dest='ball_speed', default=1, type=int)
+	args = parser.parse_args()
+	game = Game(args.board_width, args.board_length, 0.2, args.ball_speed)
 	i = 1
 	while i <= 2:
 		game.create_board_rviz()
