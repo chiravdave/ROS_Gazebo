@@ -9,7 +9,7 @@ import numpy as np
 class RandomWalk:
 
 	def __init__(self):
-		rospy.init_node("random_walk")
+		rospy.init_node("random_walk", anonymous = True)
 		self.publisher = rospy.Publisher("/actions",String,queue_size = 10)
 		self.subscriber = rospy.Subscriber("/status",String,self.callback)
 		self.init_state = problem.get_initial_state()

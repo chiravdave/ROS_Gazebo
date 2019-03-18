@@ -63,7 +63,6 @@ find_package(catkin REQUIRED COMPONENTS
    GetSuccessor.srv
    GetInitialState.srv
    IsGoalState.srv
-   GetScale.srv
    GetGoalState.srv
  )
 

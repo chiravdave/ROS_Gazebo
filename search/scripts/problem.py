@@ -78,18 +78,6 @@ def get_goal_state():
     except rospy.ServiceException,e:
         print "Service call failed: %s"%e
 
-def get_scale():
-    """
-    This function returns the scale used to generate the maze 
-    """
-    rospy.wait_for_service('maze_scale')
-    try:
-        scale = rospy.ServiceProxy('maze_scale',GetScale)
-        response = scale()
-        return (response.scale)
-    except rospy.ServiceException,e:
-        print "Service call failed: %s"%e
-
 #This function returns list of  valid actions 
 def get_actions():
     return ["TurnCW","TurnCCW","MoveF","MoveB"]

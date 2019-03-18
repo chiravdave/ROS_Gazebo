@@ -2,11 +2,19 @@ import numpy as np
 
 class Maze:
 
-	def copy_empty_world(self):
+	def __init__(self, grid_dimension):
+		'''
+		Here we will be generating a square maze every time whose starting point will be at origin (0, 0) and end point will be (grid_dimension,grid_dimension).
+		'''
+		self.end = grid_dimension
+		self.start = 0
+		self.blocked_edges = set()
+
+	def copy_empty_world(self, path):
 		#File containing empty world description
-		f_in = open('/home/local/ASUAD/cdave1/catkin_ws/src/search/worlds/empty_world.sdf', 'r')
+		f_in = open(path+'/worlds/empty_world.sdf', 'r')
 		#File to save your maze
-		f_out = open('/home/local/ASUAD/cdave1/catkin_ws/src/search/worlds/maze.sdf', 'w')
+		f_out = open(path+'/worlds/maze.sdf', 'w')
 		#Copying empty world description into output maze
 		for line in f_in:
 			f_out.write(line)
@@ -78,38 +86,35 @@ class Maze:
 		f_out.write('<velocity>0 0 0 0 -0 0</velocity>\n<acceleration>0 0 -9.8 0 -0 0</acceleration>\n<wrench>0 0 -9.8 0 -0 0</wrench>\n</link>\n</model>\n')
 
 	#Method to generate maze
-	def generate_maze(self, grid_dimension, n_obstacles, seed, scale=0.5):
+	def generate_maze(self, n_obstacles, seed, path):
 		np.random.seed(seed)
-		blocked_edges = set()
 		coords = []
-		f_out = self.copy_empty_world()
-		self.add_walls(f_out, grid_dimension*scale)
+		f_out = self.copy_empty_world(path)
+		self.add_walls(f_out, self.end*0.5)
 		count = 1
 		while(count <= n_obstacles):
-			x = scale*np.random.randint(0, grid_dimension+1)
-			y = scale*np.random.randint(0, grid_dimension+1)
+			x = 0.5*np.random.randint(0, self.end+1)
+			y = 0.5*np.random.randint(0, self.end+1)
 			#flag is used to decide if we want to block the edge (x, y) and (x+1, y) or (x, y) and (x, y+1) 
 			flag = np.random.randint(0, 2)
-			if(flag == 0 and ((x+scale) <= grid_dimension*scale) and ((x, y, x+scale, y) not in blocked_edges)):
-				blocked_edges.add((x, y, x+scale, y))
+			if(flag == 0 and ((x+0.5) <= self.end*0.5) and ((x, y, x+0.5, y) not in self.blocked_edges)):
+				self.blocked_edges.add((x, y, x+0.5, y))
 				#Adding obstacle in the middle with some offset value of the edge to be blocked
-				offset = np.random.uniform(0, 0.07*scale)
-				coords.append((x+scale/2+offset, y))
-				self.add_can(f_out, x+scale/2+offset, y)
+				offset = np.random.uniform(0, 0.07*0.5)
+				coords.append((x+0.5/2+offset, y))
+				self.add_can(f_out, x+0.5/2+offset, y)
 				count += 1
-			elif(flag == 1 and ((y+scale) <= grid_dimension*scale) and ((x, y, x, y+scale) not in blocked_edges)):
-				blocked_edges.add((x, y, x, y+scale))
+			elif(flag == 1 and ((y+0.5) <= self.end*0.5) and ((x, y, x, y+0.5) not in self.blocked_edges)):
+				self.blocked_edges.add((x, y, x, y+0.5))
 				#Adding obstacle in the middle with some offset value of the edge to be blocked
-				offset = np.random.uniform(0, 0.07*scale)
-				coords.append((x, y+scale/2-offset))
-				self.add_can(f_out, x, y+scale/2-offset)
+				offset = np.random.uniform(0, 0.07*0.5)
+				coords.append((x, y+0.5/2-offset))
+				self.add_can(f_out, x, y+0.5/2-offset)
 				count += 1
-		self.add_goal(f_out, grid_dimension*0.5)
+		self.add_goal(f_out, self.end*0.5)
 		f_out.write('</state>')
-		self.add_goal_description(f_out, grid_dimension*0.5)
+		self.add_goal_description(f_out, self.end*0.5)
 		self.add_walls_description(f_out)
 		self.add_can_description(f_out, coords)
 		f_out.write('</world>\n</sdf>')
 		f_out.close()
-		maze = [(0, grid_dimension, 'EAST', scale), blocked_edges]
-		return maze
