@@ -29,9 +29,9 @@
 # Author: Michael Ferguson
 
 import copy
+import subprocess
 import actionlib
 import rospy
-
 from math import sin, cos
 from moveit_python import (MoveGroupInterface,
                            PlanningSceneInterface,
@@ -241,7 +241,7 @@ class GraspingClient(object):
             if result.error_code.val == MoveItErrorCodes.SUCCESS:
                 return
 
-if __name__ == "__main__":
+def start():
     # Create a node
     rospy.init_node("demo")
 
@@ -312,3 +312,10 @@ if __name__ == "__main__":
     # Tuck the arm, lower the torso
     grasping_client.tuck()
     torso_action.move_to([0.0, ])
+
+if __name__ == '__main__':
+    sim = subprocess.Popen(['roslaunch fetch_roblocks demo.launch'], shell=True)
+    rospy.sleep(20)
+    start()
+    sim.terminate()
+    print(sim.wait())
