@@ -30,6 +30,7 @@
 
 import copy
 import subprocess
+import roslaunch
 import actionlib
 import rospy
 from math import sin, cos
@@ -314,31 +315,12 @@ def start():
     torso_action.move_to([0.0, ])
 
 if __name__ == '__main__':
-		sim = subprocess.Popen(['roslaunch fetch_roblocks demo.launch'], shell=True)
+		rospy.init_node('en_Mapping', anonymous=True)
+		uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+		roslaunch.configure_logging(uuid)
+		launch = roslaunch.parent.ROSLaunchParent(uuid, ["/home/chirav/catkin_ws/src/fetch_roblocks/launch/demo.launch"])
+		launch.start()
+		rospy.loginfo("started")
 		rospy.sleep(20)
-		#start()
-		for i in range(2):
-			print i
-			try:
-				sim.kill()
-				sim.terminate()
-				sim.wait()
-				rospy.sleep(10)
-			except:
-				pass
-			try:
-				gazebo = subprocess.Popen(['killall -9 gzserver & killall -9 gzclient'], shell=True)
-				gazebo.kill()
-				gazebo.terminate()
-				gazebo.wait()
-				rospy.sleep(10)
-			except:
-				pass
-			try:
-				ros = subprocess.Popen(['killall -9 rosmaster'], shell=True)
-				ros.kill()
-				ros.terminate()
-				ros.wait()
-				rospy.sleep(10)
-			except:
-				pass
+		rospy.loginfo("stopping")
+		launch.shutdown()
