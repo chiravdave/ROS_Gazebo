@@ -314,8 +314,31 @@ def start():
     torso_action.move_to([0.0, ])
 
 if __name__ == '__main__':
-    sim = subprocess.Popen(['roslaunch fetch_roblocks demo.launch'], shell=True)
-    rospy.sleep(20)
-    start()
-    sim.terminate()
-    print(sim.wait())
+		sim = subprocess.Popen(['roslaunch fetch_roblocks demo.launch'], shell=True)
+		rospy.sleep(20)
+		#start()
+		for i in range(2):
+			print i
+			try:
+				sim.kill()
+				sim.terminate()
+				sim.wait()
+				rospy.sleep(10)
+			except:
+				pass
+			try:
+				gazebo = subprocess.Popen(['killall -9 gzserver & killall -9 gzclient'], shell=True)
+				gazebo.kill()
+				gazebo.terminate()
+				gazebo.wait()
+				rospy.sleep(10)
+			except:
+				pass
+			try:
+				ros = subprocess.Popen(['killall -9 rosmaster'], shell=True)
+				ros.kill()
+				ros.terminate()
+				ros.wait()
+				rospy.sleep(10)
+			except:
+				pass

@@ -123,9 +123,9 @@ class GraspingClient(object):
 if __name__ == '__main__':
     rospy.init_node('roblocks', anonymous =True)
     grasping = GraspingClient()
-    move_base = MoveBaseClient()
-    #head = PointHeadClient()
+    '''move_base = MoveBaseClient()
+    head = PointHeadClient()
     target_pose = move_base.move_towards('demo_cube', 'link')
     if target_pose:
-        #head.look_at(target_pose)
-        grasping.pick(get_model_pose('demo_cube', 'link'))
+        head.look_at(target_pose)'''
+    grasping.pick(get_model_pose('demo_cube', 'link'))
