@@ -29,6 +29,7 @@
 # Author: Michael Ferguson
 
 import copy
+import socket
 import subprocess
 import roslaunch
 import actionlib
@@ -244,7 +245,7 @@ class GraspingClient(object):
 
 def start():
     # Create a node
-    rospy.init_node("demo")
+    #rospy.init_node("demo")
 
     # Make sure sim time is working
     while not rospy.Time.now():
@@ -315,12 +316,18 @@ def start():
     torso_action.move_to([0.0, ])
 
 if __name__ == '__main__':
-		rospy.init_node('en_Mapping', anonymous=True)
+	rospy.init_node('demo', anonymous=True)
+	server = socket.socket()
+	server.bind(("localhost", 12345))
+	server.listen(1)
+	while True:
 		uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
 		roslaunch.configure_logging(uuid)
 		launch = roslaunch.parent.ROSLaunchParent(uuid, ["/home/chirav/catkin_ws/src/fetch_roblocks/launch/demo.launch"])
 		launch.start()
 		rospy.loginfo("started")
 		rospy.sleep(20)
+		client,_ = server.accept()
+		start()
 		rospy.loginfo("stopping")
 		launch.shutdown()
