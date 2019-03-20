@@ -319,15 +319,15 @@ if __name__ == '__main__':
 	rospy.init_node('demo', anonymous=True)
 	server = socket.socket()
 	server.bind(("localhost", 12345))
-	server.listen(1)
-	while True:
+	server.listen(5)
+	while not rospy.is_shutdown():
 		uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
 		roslaunch.configure_logging(uuid)
 		launch = roslaunch.parent.ROSLaunchParent(uuid, ["/home/chirav/catkin_ws/src/fetch_roblocks/launch/demo.launch"])
 		launch.start()
 		rospy.loginfo("started")
-		rospy.sleep(20)
 		client,_ = server.accept()
 		start()
 		rospy.loginfo("stopping")
 		launch.shutdown()
+        rospy.sleep(10)
