@@ -31,6 +31,7 @@
 import copy
 import socket
 import subprocess
+from fetch_roblocks.msg import Ready
 import roslaunch
 import actionlib
 import rospy
@@ -47,6 +48,8 @@ from geometry_msgs.msg import PoseStamped
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from moveit_msgs.msg import PlaceLocation, MoveItErrorCodes
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
+
+launch = None
 
 # Move base using navigation stack
 class MoveBaseClient(object):
@@ -315,14 +318,24 @@ def start():
     grasping_client.tuck()
     torso_action.move_to([0.0, ])
 
+def start_robot(data):
+    global launch
+    start()
+    rospy.loginfo("stopping")
+    launch.shutdown()
+    client = socket.socket()
+    client.connect(('localhost', 12345))
+    client.close()
+
 if __name__ == '__main__':
-	uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
-	roslaunch.configure_logging(uuid)
-	launch = roslaunch.parent.ROSLaunchParent(uuid, ["/home/chirav/catkin_ws/src/fetch_roblocks/launch/demo.launch"])
-	launch.start()
-	rospy.loginfo("started")
-	rospy.sleep(20)
-	rospy.init_node('demo', anonymous=True)
-	start()
-	rospy.loginfo("stopping")
-	launch.shutdown()
+    global launch
+    uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+    roslaunch.configure_logging(uuid)
+    launch = roslaunch.parent.ROSLaunchParent(uuid, ["/home/chirav/catkin_ws/src/fetch_roblocks/launch/demo.launch"])
+    launch.start()
+    rospy.loginfo("started")
+    rospy.sleep(20)
+    rospy.init_node('demo', anonymous=True)
+    rospy.Publisher('ready_msg', Ready, queue_size=10)
+    rospy.Subscriber("ready_msg", Ready, start_robot)
+    rospy.spin()
