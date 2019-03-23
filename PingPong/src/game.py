@@ -157,8 +157,8 @@ class Game:
 		self.start()
 		self.computer_score, self.player_score = 0, 0
 		while not rospy.is_shutdown():
+			rospy.sleep(0.3)
 			self.move_ball(1)
-			rospy.sleep(1)
 
 	def start(self):
 		'''
@@ -346,6 +346,7 @@ class Game:
 		'''
 		This method will move the player's paddle
 		'''
+		print(data.where)
 		if data.where == 'up' and self.player.x > 1.5*self.scale:
 			self.player.update_location(-self.scale)
 		elif data.where == 'down' and self.player.x < self.board_width-1.5*self.scale:
@@ -356,6 +357,7 @@ class Game:
 		'''
 		This method will move the computer's paddle
 		'''
+		print(data.where)
 		if data.where == 'up' and self.computer.x > 1.5*self.scale:
 			self.computer.update_location(-self.scale)
 		elif data.where == 'down' and self.computer.x < self.board_width-1.5*self.scale:
