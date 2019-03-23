@@ -1,9 +1,8 @@
-<<<<<<< HEAD
 # Table of Contents
 1. [Introduction](README.md#introduction)
 1. [Dependencies](README.md#dependencies)
 1. [Instructions to run the code](README.md#instructions-to-run-the-code)
-1. [Future Progress](README.md#future-progress)
+1. [Future Work](README.md#future-work)
 
 # Introduction
 Ping Pong is a <b>two-dimensional sports game</b> that simulates <b>table tennis</b>. The player controls an in-game paddle by moving it vertically across the left or right side of the screen. They can compete against another player controlling a second paddle on the opposing side. Players use the paddles to hit a ball back and forth. The goal is for each player to reach eleven points before the opponent; points are earned when one fails to return the ball to the other. </br>
@@ -25,12 +24,10 @@ Step 3. Run the ros nodes <b>test_computer_node.py</b> and <b>test_computer_node
 
 Step 4. Run the ros node <b>game.py</b>
 
-##ROS Services
+Markup : * ROS Services
+              * GameInfo.srv
 
-##ROS Messages
+* ROS Messages
 
-#Future Progress
-=======
-# ROS_Gazebo
-Projects & Assignments on search, planning, game trees and probabilistic reasonining
->>>>>>> 884e2dbc583508ab142013be1da1808d07786868
+#Future Work
+For future work, I'll be adding dynamics to the environment such that the ball's movement are not linear.
