@@ -11,12 +11,12 @@ def send_marker():
 	marker.header.frame_id = "/map"
 	marker.header.stamp = rospy.Time.now()
 	marker.action = marker.ADD
-	marker.type = Marker.CUBE
-	marker.ns = 'ball'
+	marker.type = Marker.TEXT_VIEW_FACING
+	marker.ns = 'text'
 	marker.id = 1
-	marker.scale.x = 3
-	marker.scale.y = 0.2
-	marker.scale.z = 0.05
+	marker.scale.x = 0.3
+	marker.scale.y = 0.3
+	marker.scale.z = 0.3
 	marker.color.a = 1
 	marker.color.r = 1
 	marker.color.g = 1
@@ -25,9 +25,10 @@ def send_marker():
 	marker.pose.orientation.x = 0
 	marker.pose.orientation.y = 0
 	marker.pose.orientation.z = 0
-	marker.pose.position.x = 1.5
-	marker.pose.position.y = -0.1
-	marker.pose.position.z = 0.025 
+	marker.pose.position.x = 0.3
+	marker.pose.position.y = 2
+	marker.pose.position.z = 0.5
+	marker.text = '2' 
 	publisher.publish(marker)
 
 if __name__ == '__main__':

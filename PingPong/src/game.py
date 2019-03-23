@@ -50,6 +50,7 @@ class Game:
 		rospy.Subscriber("move_player_paddle", MovePlayerPaddle, self.move_player_paddle)
 		self.ball_loc_msg = BallLoc()
 		rospy.Rate(3).sleep()
+		self.create_board_rviz()
 
 	def start(self):
 		if self.board_length % 2 == 0:
@@ -59,7 +60,19 @@ class Game:
 		self.computer = Paddle(self.board_width/2, 0)
 		self.player = Paddle(self.board_width/2, self.board_length)
 		self.ball_direction = choice(['N','S','NE','NW','SW','SE'])
-		self.create_board_rviz()
+		self.computer_score, self.player_score = 0, 0
+		self.reset()
+
+	def reset(self):
+		'''
+		This method will reset the game in rviz
+		'''
+		#Add marker for the ball
+		self.add_ball_marker(self.ball.x, self.ball.y)
+		#Adding marker for computer's paddle
+		self.add_paddle_marker(self.board_width/2, self.scale/2, 0)
+		#Adding marker for player's paddle
+		self.add_paddle_marker(self.board_width/2, self.board_length-self.scale/2, 1)
 
 	def create_board_rviz(self):
 		'''
@@ -68,12 +81,14 @@ class Game:
 		boundary_info = [(-0.1, self.board_length/2, self.scale, self.board_length), (self.board_width/2, self.board_length+0.1, self.board_width, self.scale),
 						(self.board_width+0.1, self.board_length/2, self.scale, self.board_length), (self.board_width/2, -0.1, self.board_width, self.scale)]
 		self.add_game_boundary_rviz(boundary_info)
-		self.add_ball_marker(self.board_width/2, self.board_length/2)
-		#Adding marker for computer's paddle
-		self.add_paddle_marker(self.board_width/2, self.scale/2, 0)
-		#Adding marker for player's paddle
-		self.add_paddle_marker(self.board_width/2, self.board_length-self.scale/2, 1)
-		#self.add_score_marker()
+		#Adding score for computer in rviz
+		self.add_score_marker(round(self.board_width/2-0.2, 1), -1, 0, 0)
+		#Adding name for computer in rviz
+		self.add_player_name_rviz(round(self.board_width/2+0.2, 1), -1, 0)
+		#Adding score for player in rviz
+		self.add_score_marker(round(self.board_width/2-0.2, 1), self.board_length+1, 0, 1)
+		#Adding name for player in rviz
+		self.add_player_name_rviz(round(self.board_width/2+0.2, 1), self.board_length+1, 1)
 
 	def add_game_boundary_rviz(self, boundary_info):
 		'''
@@ -107,6 +122,41 @@ class Game:
 			boundary_marker.color.b = 1 
 			self.marker_publisher.publish(boundary_marker)
 			index += 1
+
+	def add_player_name_rviz(self, center_x, center_y, who):
+		'''
+		This method will add name of the players under their scores
+		who: 1, for user
+		     0, for computer
+		'''
+		marker = Marker()
+		marker.header.frame_id = "/map"
+		marker.header.stamp = rospy.Time.now()
+		marker.action = marker.ADD
+		marker.type = Marker.TEXT_VIEW_FACING
+		marker.scale.x = 0.3
+		marker.scale.y = 0.3
+		marker.scale.z = 0.3
+		marker.color.a = 1
+		marker.color.r = 1
+		marker.color.g = 1
+		marker.color.b = 1
+		marker.pose.orientation.w = 0
+		marker.pose.orientation.x = 0
+		marker.pose.orientation.y = 0
+		marker.pose.orientation.z = 0
+		marker.pose.position.x = center_x
+		marker.pose.position.y = center_y
+		marker.pose.position.z = 0.5
+		if who == 0:
+			marker.ns = 'computer'
+			marker.id = 8
+			marker.text = 'Computer'
+		else:
+			marker.ns = 'player'
+			marker.id = 9
+			marker.text = 'Player'
+		self.marker_publisher.publish(marker) 
 
 	def add_ball_marker(self, center_x, center_y):
 		'''
@@ -155,6 +205,7 @@ class Game:
 		marker.pose.orientation.y = 0
 		marker.pose.orientation.z = 0
 		marker.pose.position.x = center_x
+		marker.pose.position.y = center_y
 		marker.pose.position.z = 0.025
 		if who == 0:
 			marker.ns = 'computer'
@@ -163,7 +214,6 @@ class Game:
 			marker.color.r = 0
 			marker.color.g = 1
 			marker.color.b = 0
-			marker.pose.position.y = center_y
 		else:
 			marker.ns = 'player'
 			marker.id = 3
@@ -171,17 +221,42 @@ class Game:
 			marker.color.r = 0
 			marker.color.g = 0
 			marker.color.b = 1
-			marker.pose.position.y = center_y
 		self.marker_publisher.publish(marker)
 
-	def add_score_marker(self, who):
+	def add_score_marker(self, center_x, center_y, score, who):
 		'''
 		This method will update the scores. 
 
 		who: 1, user won the game
 		     0, computer won the game 
 		'''
-		pass
+		marker = Marker()
+		marker.header.frame_id = "/map"
+		marker.header.stamp = rospy.Time.now()
+		marker.action = marker.ADD
+		marker.type = Marker.TEXT_VIEW_FACING
+		marker.scale.x = 0.3
+		marker.scale.y = 0.3
+		marker.scale.z = 0.3
+		marker.color.a = 1
+		marker.color.r = 1
+		marker.color.g = 1
+		marker.color.b = 1
+		marker.pose.orientation.w = 0
+		marker.pose.orientation.x = 0
+		marker.pose.orientation.y = 0
+		marker.pose.orientation.z = 0
+		marker.pose.position.x = center_x
+		marker.pose.position.y = center_y
+		marker.pose.position.z = 0.5
+		marker.text = str(score)
+		if who == 0:
+			marker.ns = 'computer_score'
+			marker.id = 10
+		else:
+			marker.ns = 'player_score'
+			marker.id = 11
+		self.marker_publisher.publish(marker) 
 
 	def value_in_range(self, value, low, high):
 		'''
@@ -205,9 +280,11 @@ class Game:
 		elif self.ball.y == self.scale/2 or self.ball.y == self.board_length-self.scale/2:
 			#Checking if the ball reached the computer's end or not
 			if self.ball.y == self.scale/2:
-				self.update_score(1)
+				self.player_score += 1
+				self.add_score_marker(round(self.board_width/2-0.2, 1), self.board_length+1, self.player_score, 1)
 			else:
-				self.update_score(0)
+				self.computer_score += 1
+				self.add_score_marker(round(self.board_width/2-0.2, 1), -1, self.computer_score, 0)
 			self.start()
 			return
 		#Checking if the ball got hit by the computer's paddle
