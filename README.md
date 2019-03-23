@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Table of Contents
 1. [Introduction](README.md#introduction)
 1. [Dependencies](README.md#dependencies)
@@ -29,3 +30,7 @@ Step 4. Run the ros node <b>game.py</b>
 ##ROS Messages
 
 #Future Progress
+=======
+# ROS_Gazebo
+Projects & Assignments on search, planning, game trees and probabilistic reasonining
+>>>>>>> 884e2dbc583508ab142013be1da1808d07786868
