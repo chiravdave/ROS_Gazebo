@@ -33,6 +33,7 @@ Step 4. Run the ros node <b>game.py</b>
    2. MovePlayerPaddle.msg - For sending direction to move player's paddle.
    
 * Extra Information
+
 I have provided two example files named test_computer_node.py and test_player_node.py for the reference. The game begins with the ball moving in some random direction and with some defined speed. The game updates the ball location at every 1/3 sec. The locations of the ball and paddles are depending on scale value (0.5). There are three possible actions for the paddle movement (stay, up and down). The player/computer make move only when the game publishes (BallInfo.msg) the current information of the ball.
 
 Implement your own logic for player nodes and either play with the computer or against each other.
