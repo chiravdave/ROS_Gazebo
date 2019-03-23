@@ -24,10 +24,10 @@ Step 3. Run the ros nodes <b>test_computer_node.py</b> and <b>test_computer_node
 
 Step 4. Run the ros node <b>game.py</b>
 
-Markup : * ROS Services
-              * GameInfo.srv
+* ROS Services
+   1. GameInfo.srv
 
 * ROS Messages
 
-#Future Work
+# Future Work
 For future work, I'll be adding dynamics to the environment such that the ball's movement are not linear.
