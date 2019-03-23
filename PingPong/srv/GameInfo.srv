@@ -2,3 +2,4 @@
 int64 board_length
 int64 board_width
 int64 ball_speed
+int64 scale

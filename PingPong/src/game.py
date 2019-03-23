@@ -6,45 +6,18 @@ from PingPong.msg import BallInfo, MovePlayerPaddle, MoveComputerPaddle
 from PingPong.srv import GameInfo
 import argparse
 import rospy
-
-class Ball:
-
-	def __init__(self, center_x, center_y, direction):
-		self.x = center_x
-		self.y = center_y
-		self.direction = direction
-
-	def update_location(self, distance_x, distance_y):
-		self.x = round(self.x + distance_x, 1)
-		self.y = round(self.y + distance_y, 1)
-
-	def update_direction(self, direction):
-		self.direction = direction
-
-	def __str__(self):
-		return 'ball is at loc ({}, {})'.format(self.x, self.y)
-
-	def __repr__(self):
-		return 'ball is at loc ({}, {})'.format(self.x, self.y)
-
-class Paddle:
-
-	def __init__(self, center_x, center_y):
-		self.x = center_x
-		self.y = center_y
-
-	def update_location(self, distance_x):
-		self.x = round(self.x + distance_x, 1)
-
-	def __str__(self):
-		return 'paddle is at loc({}, {})'.format(self.x, self.y)
-
-	def __repr__(self):
-		return 'paddle is at loc({}, {})'.format(self.x, self.y)
+from ball import Ball
+from paddle import Paddle
 
 class Game:
 
 	def __init__(self, board_length, board_width, ball_speed, scale=0.2):
+		self.board_length = float(board_length)
+		self.board_width = float(board_width)
+		self.ball_speed = ball_speed
+		self.scale = scale
+		#self.directions = ['E','W','N','S','NE','NW','SW','SE']
+		self.ball_info_msg = BallInfo()
 		#For publishing markers representing game elements 
 		self.marker_publisher = rospy.Publisher('visualization_marker', Marker, queue_size=10)
 		#For publishing ball information (x, y, direction)
@@ -53,15 +26,9 @@ class Game:
 		rospy.Subscriber("move_player_paddle", MovePlayerPaddle, self.move_player_paddle)
 		#For listening computer's paddle movements
 		rospy.Subscriber("move_computer_paddle", MoveComputerPaddle, self.move_computer_paddle)
-		#For providing game information (board_length, board_width, ball_speed)
+		#For providing game information (board_length, board_width, ball_speed, scale)
 		rospy.Service('game_info', GameInfo, self.send_game_info)
 		rospy.Rate(3).sleep()
-		self.board_length = float(board_length)
-		self.board_width = float(board_width)
-		self.ball_speed = ball_speed
-		self.scale = scale
-		#self.directions = ['E','W','N','S','NE','NW','SW','SE']
-		self.ball_info_msg = BallInfo()
 		self.create_board_rviz()
 
 	def create_board_rviz(self):
@@ -288,7 +255,7 @@ class Game:
 		self.ball_info_pub.publish(self.ball_info_msg)
 
 	def send_game_info(self, req):
-		return self.board_length, self.board_width, self.ball_speed
+		return self.board_length, self.board_width, self.ball_speed, self.scale
 
 	def value_in_range(self, value, low, high):
 		'''
@@ -313,11 +280,11 @@ class Game:
 		elif self.ball.y == round(self.scale/2, 1) or self.ball.y == self.board_length-round(self.scale/2, 1):
 			#Checking if the ball reached the computer's end or not
 			if self.ball.y == round(self.scale/2, 1):
-				print('Player Won!')
+				print 'Player Won!'
 				self.player_score += 1
 				self.add_score_marker(round(self.board_width/2-0.2, 1), self.board_length+1, self.player_score, 1)
 			else:
-				print('Computer Won!')
+				print 'Computer Won!'
 				self.computer_score += 1
 				self.add_score_marker(round(self.board_width/2-0.2, 1), -1, self.computer_score, 0)
 			self.start()
