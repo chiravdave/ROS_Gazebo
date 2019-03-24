@@ -2,8 +2,8 @@
 
 import rospy
 from numpy.random import choice
-from PingPong.msg import BallInfo, MovePlayerPaddle
-from PingPong.srv import GameInfo
+from pingpong.msg import BallInfo, MovePlayerPaddle
+from pingpong.srv import GameInfo
 from paddle import Paddle
 
 class PlayerNode:
@@ -33,7 +33,6 @@ class PlayerNode:
 		This method publishes the best action for the player
 		'''
 		self.move_msg.where = action
-		print(action)
 		self.action_publisher.publish(self.move_msg)
 
 	def move_player_paddle(self, data):

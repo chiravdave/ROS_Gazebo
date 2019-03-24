@@ -18,11 +18,11 @@ I developed this game with the motivation that it can be used to teach about <b>
 # Instructions to run the code
 Step 1. Clone this repository and put it inside your catkin workspace.
 
-Step 2. Open up rviz and add a marker into it. 
+Step 2. Run the launch file <b>start.launch</b> as <b>roslaunch pingpong start.launch</b>.
 
-Step 3. Run the ros nodes <b>test_computer_node.py</b> and <b>test_computer_node.py</b>.
+Step 3. Run the ros nodes <b>test_computer_node.py</b> and <b>test_computer_node.py</b> as <b>rosrun pingpong {file_name}</b>.
 
-Step 4. Run the ros node <b>game.py</b>
+Step 4. Run the ros node <b>game.py</b> as <b>rosrun pingpong game.py</b>.
 
 * ROS Services
    1. GameInfo.srv - Returns board length, board width, ball speed and scale (unit value by which ball and paddles are moved).
@@ -34,9 +34,11 @@ Step 4. Run the ros node <b>game.py</b>
    
 * Extra Information
 
-I have provided two example files named <b>test_computer_node.py</b> and <b>test_player_node.py</b> for the reference. The game begins with the ball moving in some random direction and with some defined <b>speed (1)</b>. The game updates the ball location at every <b>1/3 sec</b>. The locations of the ball and paddles are updated depending on the <b>scale value (0.5)</b>. There are three possible actions for the paddle movement <b>(stay, up and down)</b>. The player/computer make a move only when the game publishes (BallInfo.msg) the new information of the ball.
+The game begins with the ball moving in some random direction and with some defined <b>speed (1)</b>. The game updates the ball location at every <b>1/3 sec</b>. The location of the ball and paddles are updated according to the <b>scale value (0.5)</b>. There are three possible actions for the paddle movement <b>(stay, up and down)</b>. The player/computer make a move only when the game publishes (BallInfo.msg) the new location of the ball.
 
-Implement your own logic for player nodes and either play with the computer or against each other.
+I have provided two example files named as <b>test_computer_node.py</b> and <b>test_player_node.py</b> to help you understand how to interact with the game and move your paddle. The file named as <b>game.py</b> provides you with multiple options for the game like specifing board size and ball speed. To get more information about how to specify these options, you can run this command <b>rosrun game.py --help</b>. 
+
+Implement your own logic for player node and either play against the computer or your friend.
 
 # Future Work
 For future work, I'll be adding dynamics to the environment such that the ball's movement are not linear.

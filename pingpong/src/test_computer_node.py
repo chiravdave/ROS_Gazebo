@@ -2,8 +2,8 @@
 
 import rospy
 from numpy.random import choice
-from PingPong.msg import BallInfo, MoveComputerPaddle
-from PingPong.srv import GameInfo
+from pingpong.msg import BallInfo, MoveComputerPaddle
+from pingpong.srv import GameInfo
 from paddle import Paddle
 
 class ComputerNode:
@@ -33,7 +33,6 @@ class ComputerNode:
 		This method publishes the best action for the computer
 		'''
 		self.move_msg.where = action
-		print(action)
 		self.action_publisher.publish(self.move_msg)
 
 	def move_computer_paddle(self, data):

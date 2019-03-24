@@ -2,8 +2,8 @@
 
 from numpy.random import choice
 from visualization_msgs.msg import Marker
-from PingPong.msg import BallInfo, MovePlayerPaddle, MoveComputerPaddle 
-from PingPong.srv import GameInfo
+from pingpong.msg import BallInfo, MovePlayerPaddle, MoveComputerPaddle 
+from pingpong.srv import GameInfo
 import argparse
 import rospy
 from ball import Ball
@@ -346,7 +346,6 @@ class Game:
 		'''
 		This method will move the player's paddle
 		'''
-		print(data.where)
 		if data.where == 'up' and self.player.x > 1.5*self.scale:
 			self.player.update_location(-self.scale)
 		elif data.where == 'down' and self.player.x < self.board_width-1.5*self.scale:
@@ -357,7 +356,6 @@ class Game:
 		'''
 		This method will move the computer's paddle
 		'''
-		print(data.where)
 		if data.where == 'up' and self.computer.x > 1.5*self.scale:
 			self.computer.update_location(-self.scale)
 		elif data.where == 'down' and self.computer.x < self.board_width-1.5*self.scale:
