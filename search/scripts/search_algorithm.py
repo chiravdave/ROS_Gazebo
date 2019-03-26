@@ -5,58 +5,74 @@ import problem
 import rospy
 from std_msgs.msg import String
 import argparse
+from collections import deque
+from copy import deepcopy
 
 def bfs():
 	init_state = problem.get_initial_state()
-	goal_state = problem.get_goal_state()
 	possible_actions = problem.get_actions() 
-	action_list = []
-	#to get the next state, cost for an action on state_x use:
-	(nextstate, cost) = problem.get_successor(state, action)
 	'''
-	YOUR CODE HERE
-	'''
+	#For checking if goal state is reached:
+	problem.is_goal_state() - returns 1 if true, 0 otherwise
 
-	return action_list
+	#For getting successor states:
+	(next_state, cost) = problem.get_successor(current_state, action) - 
+	next_state = State object containing x, y location and direction (if there is no next_state possible then it will have the location values as -1, -1)
+	cost = cost for taking the action
+
+	Return: list of actions for reaching goal location
+	'''
+	#YOUR CODE HERE
 
 def ucs():
 	init_state = problem.get_initial_state()
-	goal_state = problem.get_goal_state()
-	possible_actions = problem.get_actions() 
-	action_list = []
-	#to get the next state, cost for an action on state_x use:
-	(nextstate, cost) = problem.get_successor(state, action) ## This will return state with x and y co-ordinate -1 if action is not executable.
-	'''
-	YOUR CODE HERE
-	'''
+	possible_actions = problem.get_actions()
+	''' 
+	#For checking if goal state is reached:
+	problem.is_goal_state() - returns 1 if true, 0 otherwise
 
-	return action_list
+	#For getting successor states:
+	(next_state, cost) = problem.get_successor(current_state, action) - 
+	next_state = State object containing x, y location and direction (if there is no next_state possible then it will have the location values as -1, -1)
+	cost = cost for taking that action
+
+	Return: list of actions for reaching goal location
+	'''
+	#YOUR CODE HERE
 
 def gbfs():
 	init_state = problem.get_initial_state()
 	goal_state = problem.get_goal_state()
-	possible_actions = problem.get_actions() 
-	action_list = []
-	#to get the next state, cost for an action on state_x use:
-	(nextstate, cost) = problem.get_successor(state, action)
+	possible_actions = problem.get_actions()
 	'''
-	YOUR CODE HERE
-	'''
+	#For checking if goal state is reached:
+	problem.is_goal_state() - returns 1 if true, 0 otherwise
 
-	return action_list
+	#For getting successor states:
+	(next_state, cost) = problem.get_successor(current_state, action) - 
+	next_state = State object containing x, y location and direction (if there is no next_state possible then it will have the location values as -1, -1)
+	cost = cost for taking the action
+
+	Return: list of actions for reaching goal location
+	'''
+	#YOUR CODE HERE
 
 def astar():
 	init_state = problem.get_initial_state()
 	goal_state = problem.get_goal_state()
 	possible_actions = problem.get_actions() 
-	action_list = []
-	#to get the next state, cost for an action on state_x use:
-	(nextstate, cost) = problem.get_successor(state, action)
 	'''
-	YOUR CODE HERE
-	'''
+	#For checking if goal state is reached:
+	problem.is_goal_state() - returns 1 if true, 0 otherwise
 
-	return action_list
+	#For getting successor states:
+	(next_state, cost) = problem.get_successor(current_state, action) - 
+	next_state = State object containing x, y location and direction (if there is no next_state possible then it will have the location values as -1, -1)
+	cost = cost for taking the action
+
+	Return: list of actions for reaching goal location
+	'''
+	#YOUR CODE HERE
 
 # to execute a plan action_list = <list of actions>, use:
 def exec_action_list(action_list):
@@ -74,4 +90,5 @@ if __name__ == '__main__':
 	rospy.init_node('search_algorithms', anonymous = True)
 	publisher = rospy.Publisher('/actions',String,queue_size =10)
 	actions = algorithm()
+	print(actions)
 	exec_action_list(actions)
