@@ -34,7 +34,7 @@ Step 8. Implement your search algorithms in the file named <b>search_algorithm.p
 
 * Extra Information
 
-There are few helper functions that will be required to implement your own search algorithms. All the helper functions are provided under the file named <b>problem.py</b> inside the ./scripts folder and so going through it will help a lot. <b>Please go through this information very carefully</b>. 
+A scale of 0.5 is used for generating maze meaning that every edge in gazebo is divided into two parts. There are few helper functions that will be required to implement your own search algorithms. All the helper functions are provided under the file named <b>problem.py</b> inside the ./scripts folder and so going through it will help a lot. <b>Please go through this information very carefully</b>. 
 
 * <b>get_initial_state()</b> - This function returns the initial state of the turtlebot3 as a State class, which has three members (x-cordinate, y-cordinate, orientation).
 * <b>is_goal_state()</b> - This function takes the state of the turtlebot3 as argument and returns 1 if it is the goal state or 0 otherwise.
