@@ -13,7 +13,7 @@ I developed this game with the motivation that it can be used to teach about <b>
 * python2.7
 * numpy
 * ROS
-* gazebo
+* RVIZ
 
 # Instructions to run the code
 Step 1. Clone this repository and put it inside your catkin workspace.

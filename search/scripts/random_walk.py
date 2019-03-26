@@ -9,9 +9,9 @@ import numpy as np
 class RandomWalk:
 
 	def __init__(self):
-		rospy.init_node("random_walk", anonymous = True)
-		self.publisher = rospy.Publisher("/actions",String,queue_size = 10)
-		self.subscriber = rospy.Subscriber("/status",String,self.callback)
+		rospy.init_node('random_walk', anonymous = True)
+		self.publisher = rospy.Publisher('/actions',String,queue_size = 10)
+		self.subscriber = rospy.Subscriber('/status',String,self.callback)
 		self.init_state = problem.get_initial_state()
 		self.current_state = self.init_state
 		self.last_action = None
@@ -39,9 +39,9 @@ class RandomWalk:
 		self.publisher.publish(action_str)
 
 	def callback(self,data):
-		if data.data == "next":
+		if data.data == 'next':
 			self.next_action()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 	random_walker = RandomWalk()
