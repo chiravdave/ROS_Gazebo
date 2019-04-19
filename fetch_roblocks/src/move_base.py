@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 
 import rospy
+import sys
 import actionlib
-from tf import TransformListener
+from numpy import radians
+from tf.transformations import quaternion_from_euler
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from gazebo_msgs.srv import GetModelState
-from control_msgs.msg import PointHeadAction, PointHeadGoal
+from control_msgs.msg import PointHeadAction, PointHeadGoal, FollowJointTrajectoryAction, FollowJointTrajectoryGoal
 from moveit_python import MoveGroupInterface
 from geometry_msgs.msg import PoseStamped, Pose, Point, Quaternion
 from moveit_msgs.msg import MoveItErrorCodes
+from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 def get_model_pose(model_name, relative_entity_name):
     rospy.wait_for_service('/gazebo/get_model_state')
@@ -60,13 +63,13 @@ class MoveBaseClient(object):
         if not target_pose:
             return None
         move_goal = MoveBaseGoal()
-        move_goal.target_pose.pose.position.x = target_pose.pose.position.x - 0.7   
-        move_goal.target_pose.pose.position.y = target_pose.pose.position.y - 0.7
-        move_goal.target_pose.pose.position.z = target_pose.pose.position.z
-        move_goal.target_pose.pose.orientation.x = target_pose.pose.orientation.x
-        move_goal.target_pose.pose.orientation.y = target_pose.pose.orientation.y
-        move_goal.target_pose.pose.orientation.z = target_pose.pose.orientation.z - 1
-        move_goal.target_pose.pose.orientation.w = target_pose.pose.orientation.w
+        move_goal.target_pose.pose.position.x = 0.2
+        move_goal.target_pose.pose.position.y = 0
+        move_goal.target_pose.pose.position.z = 0
+        move_goal.target_pose.pose.orientation.x = 0
+        move_goal.target_pose.pose.orientation.y = 0
+        move_goal.target_pose.pose.orientation.z = 0
+        move_goal.target_pose.pose.orientation.w = 1
         move_goal.target_pose.header.frame_id = 'map'
         move_goal.target_pose.header.stamp = rospy.Time.now()
         self.client.send_goal(move_goal)
@@ -77,39 +80,76 @@ class MoveBaseClient(object):
             rospy.loginfo('Moved at target location')
         return target_pose
 
+# Send a trajectory to controller
+class FollowTrajectoryClient(object):
+
+    def __init__(self, name, joint_names):
+        self.client = actionlib.SimpleActionClient("%s/follow_joint_trajectory" % name,
+                                                   FollowJointTrajectoryAction)
+        rospy.loginfo("Waiting for %s..." % name)
+        self.client.wait_for_server()
+        self.joint_names = joint_names
+
+    def move_to(self, positions, duration=5.0):
+        if len(self.joint_names) != len(positions):
+            print("Invalid trajectory position")
+            return False
+        trajectory = JointTrajectory()
+        trajectory.joint_names = self.joint_names
+        trajectory.points.append(JointTrajectoryPoint())
+        trajectory.points[0].positions = positions
+        trajectory.points[0].velocities = [0.0 for _ in positions]
+        trajectory.points[0].accelerations = [0.0 for _ in positions]
+        trajectory.points[0].time_from_start = rospy.Duration(duration)
+        follow_goal = FollowJointTrajectoryGoal()
+        follow_goal.trajectory = trajectory
+
+        self.client.send_goal(follow_goal)
+        self.client.wait_for_result()
+
 class GraspingClient(object):
-    '''
-    
-    '''
+
     def __init__(self):
-        self.arm = MoveGroupInterface('arm_with_torso', 'base_link')
+        self.arm = MoveGroupInterface('arm_with_torso', 'map')
         self.move_group = MoveGroupInterface('arm', 'base_link')
-        self.transform = TransformListener()
 
-    def get_base_pose(self, object_pose):
-        target_pose = PoseStamped()
-        target_pose.header.frame_id = 'map'
-        target_pose.pose = object_pose.pose
-        self.transform.waitForTransform('/map', '/base_link', rospy.Time.now(), rospy.Duration(4.0))
-        base_pose = self.transform.transformPose('/base_link', target_pose)
-        base_pose.pose.position.y -= 1
-        base_pose.pose.position.z -= 0.3
-        base_pose.pose.position.x -= 0.6 
-        print(base_pose.pose.position.x, base_pose.pose.position.y)
-        return base_pose
-
-    def pick(self, object_pose):
-        base_pose = self.get_base_pose(object_pose)
-        #pose.pose = Pose(Point(0.042, 0.384, 1.826), Quaternion(0.173, -0.693, -0.242, 0.657))
-        self.arm.moveToPose(base_pose, 'wrist_roll_link')
-        result = self.arm.get_move_action().get_result()
-        if result:
-            if result.error_code.val == MoveItErrorCodes.SUCCESS:
-                rospy.loginfo('Moved arm')
+    def pick(self, target_pose):
+        print self.arm._fixed_frame, self.arm.planner_id
+        #Taking coordinate values of the object 
+        object_x, object_y, object_z = 0, 0, 0#target_pose.pose.position.x, target_pose.pose.position.y, target_pose.pose.position.z
+        #Initializing offset values for translation
+        offset_x, offset_y, offset_z = 0, 0.8, 0.5
+        #Initializing offset values for rotation
+        roll, pitch, yaw = 0, 0, 0
+        #Applying rotation to the arm
+        for i in range(20):
+            #Adding translation along x-axis 
+            final_x = object_x + offset_x
+            #Adding translation along y-axis
+            final_y = object_y + offset_y
+            #Adding translation along z-axis
+            final_z = object_z + offset_z + i*0.1
+            print final_z, i*0.1
+            final_quaternion = quaternion_from_euler(radians(roll), radians(pitch), radians(yaw), 'sxyz')
+            pose_goal = PoseStamped()
+            pose_goal.header.frame_id = 'map'
+            pose_goal.pose.position.x = final_x
+            pose_goal.pose.position.y = final_y
+            pose_goal.pose.position.z = final_z
+            pose_goal.pose.orientation.x = final_quaternion[0]
+            pose_goal.pose.orientation.y = final_quaternion[1]
+            pose_goal.pose.orientation.z = final_quaternion[2]
+            pose_goal.pose.orientation.w = final_quaternion[3]
+            pose_goal.header.stamp = rospy.Time.now()
+            self.arm.moveToPose(pose_goal, 'wrist_roll_link')
+            result = self.arm.get_move_action().get_result()
+            if result:
+                if result.error_code.val == MoveItErrorCodes.SUCCESS:
+                    rospy.loginfo('Moved arm')
+                else:
+                    rospy.logerr('Cannot move arm')
             else:
-                rospy.logerr('Cannot move arm')
-        else:
-            rospy.logerr('No result')
+                rospy.logerr('No result')
 
     def tuck(self):
         joints = ["shoulder_pan_joint", "shoulder_lift_joint", "upperarm_roll_joint",
@@ -122,10 +162,16 @@ class GraspingClient(object):
 
 if __name__ == '__main__':
     rospy.init_node('roblocks', anonymous =True)
-    grasping = GraspingClient()
-    '''move_base = MoveBaseClient()
+    '''
+    move_base = MoveBaseClient()
     head = PointHeadClient()
+    torso_action = FollowTrajectoryClient("torso_controller", ["torso_lift_joint"])
     target_pose = move_base.move_towards('demo_cube', 'link')
     if target_pose:
-        head.look_at(target_pose)'''
-    grasping.pick(get_model_pose('demo_cube', 'link'))
+        pass
+        #head.look_at(target_pose)
+    # Raise the torso using just a controller
+    rospy.loginfo("Raising torso...")
+    torso_action.move_to([0.4, ])'''
+    grasp = GraspingClient()
+    grasp.pick(get_model_pose('demo_cube', 'link'))
