@@ -63,7 +63,7 @@ class MoveBaseClient(object):
         if not target_pose:
             return None
         move_goal = MoveBaseGoal()
-        move_goal.target_pose.pose.position.x = 0.2
+        move_goal.target_pose.pose.position.x = 0.8
         move_goal.target_pose.pose.position.y = 0
         move_goal.target_pose.pose.position.z = 0
         move_goal.target_pose.pose.orientation.x = 0
@@ -114,22 +114,23 @@ class GraspingClient(object):
         self.move_group = MoveGroupInterface('arm', 'base_link')
 
     def pick(self, target_pose):
-        print self.arm._fixed_frame, self.arm.planner_id
+        #print self.arm._fixed_frame, self.arm.planner_id
         #Taking coordinate values of the object 
-        object_x, object_y, object_z = 0, 0, 0#target_pose.pose.position.x, target_pose.pose.position.y, target_pose.pose.position.z
+        object_x, object_y, object_z = round(target_pose.pose.position.x, 2), round(target_pose.pose.position.y, 2), round(target_pose.pose.position.z, 2)
+        print object_x, object_y, object_z  
         #Initializing offset values for translation
-        offset_x, offset_y, offset_z = 0, 0.8, 0.5
+        offset_x, offset_y, offset_z = 0, 0, 0.05
         #Initializing offset values for rotation
         roll, pitch, yaw = 0, 0, 0
         #Applying rotation to the arm
-        for i in range(20):
+        for i in range(10, 1, -1):
             #Adding translation along x-axis 
             final_x = object_x + offset_x
             #Adding translation along y-axis
             final_y = object_y + offset_y
             #Adding translation along z-axis
             final_z = object_z + offset_z + i*0.1
-            print final_z, i*0.1
+            print final_x, final_y, final_z, i*0.1
             final_quaternion = quaternion_from_euler(radians(roll), radians(pitch), radians(yaw), 'sxyz')
             pose_goal = PoseStamped()
             pose_goal.header.frame_id = 'map'
@@ -146,6 +147,7 @@ class GraspingClient(object):
             if result:
                 if result.error_code.val == MoveItErrorCodes.SUCCESS:
                     rospy.loginfo('Moved arm')
+                    rospy.sleep(10)
                 else:
                     rospy.logerr('Cannot move arm')
             else:
@@ -162,7 +164,6 @@ class GraspingClient(object):
 
 if __name__ == '__main__':
     rospy.init_node('roblocks', anonymous =True)
-    '''
     move_base = MoveBaseClient()
     head = PointHeadClient()
     torso_action = FollowTrajectoryClient("torso_controller", ["torso_lift_joint"])
@@ -171,7 +172,7 @@ if __name__ == '__main__':
         pass
         #head.look_at(target_pose)
     # Raise the torso using just a controller
-    rospy.loginfo("Raising torso...")
-    torso_action.move_to([0.4, ])'''
+    #rospy.loginfo("Raising torso...")
+    #torso_action.move_to([0.4, ])
     grasp = GraspingClient()
     grasp.pick(get_model_pose('demo_cube', 'link'))
