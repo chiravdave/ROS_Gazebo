@@ -16,43 +16,47 @@ class Game:
 		self.board_width = float(board_width)
 		self.ball_speed = ball_speed
 		self.scale = scale
-		#self.directions = ['E','W','N','S','NE','NW','SW','SE']
+		# For storing ball information
 		self.ball_info_msg = BallInfo()
-		#For publishing markers representing game elements 
+		# For publishing markers representing game elements 
 		self.marker_publisher = rospy.Publisher('visualization_marker', Marker, queue_size=10)
-		#For publishing ball information (x, y, direction)
+		# For publishing ball information (x, y, direction)
 		self.ball_info_pub = rospy.Publisher('ball_info', BallInfo, queue_size=10)
-		#For listening player's paddle movements
+		# For listening player's paddle movements
 		rospy.Subscriber("move_player_paddle", MovePlayerPaddle, self.move_player_paddle)
-		#For listening computer's paddle movements
+		# For listening computer's paddle movements
 		rospy.Subscriber("move_computer_paddle", MoveComputerPaddle, self.move_computer_paddle)
-		#For providing game information (board_length, board_width, ball_speed, scale)
+		# For providing game information (board_length, board_width, ball_speed, scale)
 		rospy.Service('game_info', GameInfo, self.send_game_info)
 		rospy.Rate(3).sleep()
+		# Creating game layout in RViz
 		self.create_board_rviz()
 
 	def create_board_rviz(self):
 		'''
-		This method will create the board in rviz
+		This method will create the board in RViz
 		'''
+
 		boundary_info = [(-0.1, self.board_length/2, self.scale, self.board_length), (self.board_width/2, self.board_length+0.1, self.board_width, self.scale),
 						(self.board_width+0.1, self.board_length/2, self.scale, self.board_length), (self.board_width/2, -0.1, self.board_width, self.scale)]
 		self.add_boundary_markers(boundary_info)
-		#Adding score for computer in rviz
+		# Adding score for computer in rviz
 		self.add_score_marker(round(self.board_width/2-0.2, 1), -1, 0, 0)
-		#Adding score for player in rviz
+		# Adding score for player in rviz
 		self.add_score_marker(round(self.board_width/2-0.2, 1), self.board_length+1, 0, 1)
-		#Adding name for computer in rviz
+		# Adding name for computer in rviz
 		self.add_name_marker(round(self.board_width/2+0.2, 1), -1, 0)
-		#Adding name for player in rviz
+		# Adding name for player in rviz
 		self.add_name_marker(round(self.board_width/2+0.2, 1), self.board_length+1, 1)
 
 	def add_boundary_markers(self, boundary_info):
 		'''
 		This method will add marker for the boundaries in the board game in rviz
 
-		boundary_info: [(center_x, center_y, scale_x, scale_y)] is a list of tuple containing values for all the boundaries starting from top and going in clockwise direction.
+		boundary_info: [(center_x, center_y, scale_x, scale_y)] is a list of tuple containing values for all the boundaries starting from top and going in 
+						clockwise direction.
 		'''
+
 		unique_ns = ['top', 'right', 'bottom', 'left']
 		index = 0
 		for boundary in boundary_info:
@@ -87,6 +91,7 @@ class Game:
 		who: 1, user won the game
 		     0, computer won the game 
 		'''
+
 		marker = Marker()
 		marker.header.frame_id = "/map"
 		marker.header.stamp = rospy.Time.now()
@@ -121,6 +126,7 @@ class Game:
 		who: 1, for user
 		     0, for computer
 		'''
+
 		marker = Marker()
 		marker.header.frame_id = "/map"
 		marker.header.stamp = rospy.Time.now()
@@ -150,45 +156,11 @@ class Game:
 			marker.text = 'Player'
 		self.marker_publisher.publish(marker)
 
-	def run_game(self):
-		'''
-		This method will keep the the game running 
-		'''
-		self.start()
-		self.computer_score, self.player_score = 0, 0
-		while not rospy.is_shutdown():
-			rospy.sleep(0.3)
-			self.move_ball(1)
-
-	def start(self):
-		'''
-		This method will start the game
-		'''
-		#Randomly select a starting direction for the ball
-		ball_direction = choice(['N','S','NE','NW','SW','SE'])
-		if self.board_length % 2 == 0:
-			self.ball = Ball(self.board_width/2, self.board_length/2+self.scale/2, ball_direction)
-		else:
-			self.ball = Ball(self.board_width/2, self.board_length/2, ball_direction)
-		self.computer = Paddle(self.board_width/2, 0)
-		self.player = Paddle(self.board_width/2, self.board_length)
-		self.reset()
-
-	def reset(self):
-		'''
-		This method will reset the game in rviz
-		'''
-		#Add marker for the ball
-		self.add_ball_marker(self.ball.x, self.ball.y)
-		#Adding marker for computer's paddle
-		self.add_paddle_marker(self.board_width/2, self.scale/2, 0)
-		#Adding marker for player's paddle
-		self.add_paddle_marker(self.board_width/2, self.board_length-self.scale/2, 1) 
-
 	def add_ball_marker(self, center_x, center_y):
 		'''
 		This method will add a marker for the ball
 		'''
+
 		ball_marker = Marker()
 		ball_marker.header.frame_id = "/map"
 		ball_marker.header.stamp = rospy.Time.now()
@@ -219,6 +191,7 @@ class Game:
 		who: 1, for user paddle
 		     0, for computer 
 		'''
+
 		marker = Marker()
 		marker.header.frame_id = "/map"
 		marker.header.stamp = rospy.Time.now()
@@ -250,6 +223,43 @@ class Game:
 			marker.color.b = 1
 		self.marker_publisher.publish(marker)
 
+	def run_game(self):
+		'''
+		This method will keep the the game running 
+		'''
+		self.start()
+		self.computer_score, self.player_score = 0, 0
+		while not rospy.is_shutdown():
+			rospy.sleep(0.3)
+			self.move_ball(1)
+
+	def start(self):
+		'''
+		This method will start the game
+		'''
+
+		# Randomly selecting a starting direction for the ball
+		ball_direction = choice(['N','S','NE','NW','SW','SE'])
+		if self.board_length % 2 == 0:
+			self.ball = Ball(self.board_width/2, self.board_length/2+self.scale/2, ball_direction)
+		else:
+			self.ball = Ball(self.board_width/2, self.board_length/2, ball_direction)
+		self.computer = Paddle(self.board_width/2, 0)
+		self.player = Paddle(self.board_width/2, self.board_length)
+		self.reset()
+
+	def reset(self):
+		'''
+		This method will reset the game in rviz
+		'''
+
+		# Adding marker for the ball
+		self.add_ball_marker(self.ball.x, self.ball.y)
+		# Adding marker for computer's paddle
+		self.add_paddle_marker(self.board_width/2, self.scale/2, 0)
+		# Adding marker for player's paddle
+		self.add_paddle_marker(self.board_width/2, self.board_length-self.scale/2, 1)
+
 	def publish_ball_info(self):
 		self.ball_info_msg.x, self.ball_info_msg.y, self.ball_info_msg.direction = self.ball.x, self.ball.y, self.ball.direction
 		self.ball_info_pub.publish(self.ball_info_msg)
@@ -261,6 +271,7 @@ class Game:
 		'''
 		This method will check if a value is in the range of low and high which could be float
 		'''
+
 		if low <= value and value <= high:
 			return True
 		else:
@@ -272,10 +283,13 @@ class Game:
 
 		time: it is used to update ball location in single steps and upto the speed specified. 
 		'''
+
+		# Will publish next location for the ball only when time exceeds the ball speed
 		if time > self.ball_speed:
 			self.add_ball_marker(self.ball.x, self.ball.y)
 			self.publish_ball_info()
 			return
+
 		#Checking if the game is over or not
 		elif self.ball.y == round(self.scale/2, 1) or self.ball.y == self.board_length-round(self.scale/2, 1):
 			#Checking if the ball reached the computer's end or not
@@ -289,28 +303,27 @@ class Game:
 				self.add_score_marker(round(self.board_width/2-0.2, 1), -1, self.computer_score, 0)
 			self.start()
 			return
+
 		#Checking if the ball got hit by the computer's paddle
 		elif self.value_in_range(self.ball.x, self.computer.x-2*self.scale, self.computer.x+2*self.scale) and self.ball.y == round(1.5*self.scale, 1):
-			if self.ball.direction == 'S':
-				self.ball.update_direction('N')
+			self.ball.update_direction(choice(['N','NE','NW']))
+			if self.ball.direction == 'N':
 				self.ball.update_location(0, self.scale)
-			elif self.ball.direction == 'SE':
-				self.ball.update_direction('NW')
+			elif self.ball.direction == 'NW':
 				self.ball.update_location(-self.scale, self.scale)
 			else:
-				self.ball.update_direction('NE')
 				self.ball.update_location(self.scale, self.scale)
+		
 		#Checking if the ball got hit by the player's paddle 
 		elif self.value_in_range(self.ball.x, self.player.x-2*self.scale, self.player.x+2*self.scale) and self.ball.y == round(self.board_length-1.5*self.scale, 1):
-			if self.ball.direction == 'N':
-				self.ball.update_direction('S')
+			self.ball.update_direction(choice(['S','SW','SE']))
+			if self.ball.direction == 'S':
 				self.ball.update_location(0, -self.scale)
-			elif self.ball.direction == 'NE':
-				self.ball.update_direction('SW')
+			elif self.ball.direction == 'SW':
 				self.ball.update_location(-self.scale, -self.scale)
 			else:
-				self.ball.update_direction('SE')
 				self.ball.update_location(self.scale, -self.scale)
+		
 		#Checking if the ball hit the top boundary/border
 		elif self.ball.x == self.scale*0.5:
 			if self.ball.direction == 'SW':
@@ -319,6 +332,7 @@ class Game:
 			else:
 				self.ball.update_direction('NE')
 				self.ball.update_location(self.scale, self.scale)
+		
 		#Checking if the ball hit the bottom boundary/border
 		elif self.ball.x == self.board_width-self.scale*0.5:
 			if self.ball.direction == 'NE':
@@ -327,6 +341,7 @@ class Game:
 			else:
 				self.ball.update_direction('SW')
 				self.ball.update_location(-self.scale, -self.scale)
+		
 		#Now we are just left with the free movements of the ball
 		elif self.ball.direction == 'NE':
 			self.ball.update_location(self.scale, self.scale)
@@ -340,12 +355,14 @@ class Game:
 			self.ball.update_location(0, -self.scale)
 		else:
 			self.ball.update_location(self.scale, -self.scale)
+		
 		self.move_ball(time+1)
 
 	def move_player_paddle(self, data):
 		'''
 		This method will move the player's paddle
 		'''
+
 		if data.where == 'up' and self.player.x > 1.5*self.scale:
 			self.player.update_location(-self.scale)
 		elif data.where == 'down' and self.player.x < self.board_width-1.5*self.scale:
@@ -356,6 +373,7 @@ class Game:
 		'''
 		This method will move the computer's paddle
 		'''
+
 		if data.where == 'up' and self.computer.x > 1.5*self.scale:
 			self.computer.update_location(-self.scale)
 		elif data.where == 'down' and self.computer.x < self.board_width-1.5*self.scale:
